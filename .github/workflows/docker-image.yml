@@ -30,6 +30,6 @@ jobs:
         docker build -t tulyrisquet/boya:1.0.5 .
     - name: Push Docker Image
       run:
-        docker push tulyrisquet/boya:1.0.5 .
+        docker image push tulyrisquet/boya:1.0.5 .
     # - name: Build the Docker image
     #   run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
