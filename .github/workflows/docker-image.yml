@@ -27,9 +27,9 @@ jobs:
         echo "Finalizando login"
     - name: Build Docker Image
       run:
-        docker build -t tulyrisquet/boya:1.0.5 .
+        docker build -t tulyrisquet/proyecto:0.0.1 .
     - name: Push Docker Image
       run:
-        docker image push tulyrisquet/boya:1.0.5 .
+        docker push tulyrisquet/proyecto:0.0.1
     # - name: Build the Docker image
     #   run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
