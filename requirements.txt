@@ -1,0 +1,12 @@
+Django
+djangorestframework
+djangorestframework_simplejwt
+django_cors_headers
+Pillow
+setuptools
+numpy
+scipy
+gunicorn
+packaging
+psycopg2-binary
+pytz

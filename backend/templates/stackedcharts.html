@@ -1,0 +1,279 @@
+{% extends 'charts_base.html' %}
+
+{% load static %}
+
+{% block title %}
+Boya Metoceánica
+{% endblock title %}
+
+{% block content %}
+<div id="charts-container" class="container" data-buoyId="{{ buoy.id }}">
+    {% if user.is_authenticated %}
+    <form id="stacked-charts-form" class="pt-4" style="height: 20vh;">
+        <div class="row mb-3">
+            <div class="col-md-2">
+                <label for="" class="form-label">Fecha y Hora Inicial</label>
+            </div>
+            <div class="col-md-4">
+                <input type="date" class="form-control" id="startdate" name="startdate" value="null" min="{{ first }}">
+            </div>
+            <div class="col-md-4">
+                <input type="time" class="form-control" id="starttime" name="starttime" value="00:00">
+            </div>  
+            <div class="col-md-2">
+                <button type="button" class="btn btn-primary" onclick="destroyExistingCharts(); reloadCharts()">Buscar</button>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-2">
+                <label for="" class="form-label">Fecha y Hora Final</label>
+            </div>
+            <div class="col-md-4">
+                <input type="date" class="form-control" id="enddate" name="enddate" value="null">
+            </div>
+            <div class="col-md-4">
+                <input type="time" class="form-control" id="endtime" name="endtime" value="00:00">
+            </div>
+        </div>
+    </form>
+    <div class="row">
+        <div class="col">
+            <div id="chart-container" class="chart-container" style="width: 100%; height: 80vh;"
+                data-parameterId="{{ parameter.id }}">
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col">
+            <div id="chart-container" class="chart-container py-5" style="width: 100%; height: 100vh;"
+                data-parameterId="{{ parameter.id }}">
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock content %}
+
+{% block script %}
+<script src="{% static 'js/echarts.min.js' %}"></script>
+<script src="{% static 'js/custom.js' %}"></script>
+<script>
+    var buoy_id;
+    var parameters;
+    var parameterDatas;
+    var charts;
+
+    function setSearchRange() {
+        $.ajax({
+            url: `/api/getDateRangeForParameters/`,
+            type: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                if (response.messageType == 'success') {           
+                    const startDateInput = document.getElementById(`startdate`);
+                    const endDateInput = document.getElementById(`enddate`);
+                    console.log()
+                    if (response.data && response.data.first && response.data.last) {
+                        min = new Date(response.data.first);
+                        max = new Date(response.data.last);
+                        startDateInput.min = min.toISOString().split('T')[0];
+                        startDateInput.max = max.toISOString().split('T')[0];
+                        endDateInput.min = min.toISOString().split('T')[0];
+                        endDateInput.max = max.toISOString().split('T')[0];
+                    }
+                }
+            },
+            error: function (error) {
+                console.log(error);
+                showToasts(error.responseJSON.message, error.responseJSON.messageType);
+            }
+        });
+    }
+
+    function createEChart(container) {
+        const eChart = echarts.init(container);
+        charts.push(eChart);
+
+        const legend = parameterDatas.map((parameterData) => parameterData.parameter.fullname)
+        const series = parameterDatas.map((parameterData) => {
+            return {
+                name: parameterData.parameter.fullname,
+                type: 'line',
+                smooth: true,
+                stack: 'Total',
+                data: parameterData.data.map((item) => {
+                    return {
+                        name: item.timestamp,
+                        value: [
+                            item.timestamp,
+                            item.value
+                        ]
+                    }
+                })
+            }
+        });
+        const xData = parameterDatas[0].data.map((item) => item.timestamp);
+
+        option = {
+            tooltip: {
+                trigger: 'axis',
+                position: function (pt) {
+                    return [pt[0], '10%'];
+                }
+            },
+            toolbox: {
+                feature: {
+                    dataZoom: {
+                        yAxisIndex: 'none'
+                    },
+                    restore: {},
+                    saveAsImage: {}
+                }
+            },
+            legend: {
+                data: legend
+            },
+            grid: {
+                top: '12%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'time',
+                splitLine: {
+                    show: false
+                },
+                data: xData
+            },
+            yAxis: {
+                type: 'value',
+                boundaryGap: [0, '100%'],
+                splitLine: {
+                    show: false
+                },
+                axisLine: {
+                    show: true,
+                },
+                axisTick: {
+                    show: true,
+                }
+            },
+            dataZoom: [{
+                type: 'slider',
+                show: true,
+                handleSize: 8
+            },
+            {
+                type: 'inside'
+            },
+            {
+                type: 'slider',
+                show: true,
+                yAxisIndex: 0,
+                filterMode: 'empty',
+                width: 12,
+                height: '70%',
+                handleSize: 8,
+                showDataShadow: false,
+                left: '93%'
+            }],
+            series: series
+        };
+
+        eChart.setOption(option);
+        window.addEventListener('resize', function () {
+            charts.forEach((chart) => chart.resize());
+        });
+    }
+
+    function getParameterData(buoy_id, parameter_id) {
+        const startDateInput = document.getElementById(`startdate`);
+        const startDate = startDateInput ? startDateInput.value : '';
+
+        const startTimeInput = document.getElementById(`starttime`);
+        const startTime = startTimeInput ? startTimeInput.value : '';
+
+        const endDateInput = document.getElementById(`enddate`);
+        const endDate = endDateInput ? endDateInput.value : '';
+
+        const endTimeInput = document.getElementById(`endtime`);
+        const endTime = endTimeInput ? endTimeInput.value : '';
+
+        $.ajax({
+            url: `/api/data/${buoy_id}/${parameter_id}/?startdate=${startDate}&starttime=${startTime}&enddate=${endDate}&endtime=${endTime}`,
+            type: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                const parameter = parameters.find((parameter) => parameter.id == parameter_id);
+                parameterDatas.push({
+                    parameter: parameter,
+                    data: response.data.data
+                });
+
+                if (parameterDatas.length == parameters.length) {
+                    const chartContainer = document.getElementById(`chart-container`);
+                    createEChart(chartContainer);
+                }
+            },
+            error: function (error) {
+                console.log(error);
+                showToasts(error.responseJSON.message, error.responseJSON.messageType);
+            }
+        });
+    }
+
+    function getParameter(parameter_id) {
+        $.ajax({
+            url: `/api/parameters/${parameter_id}/`,
+            type: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                if (response.messageType == 'success') {
+                    // search if parameter is already in the list
+                    const index = parameters.findIndex((parameter) => parameter.id == response.data.id);
+                    if (index == -1) {
+                        parameters.push(response.data);
+                    } else {
+                        parameters[index] = response.data;
+                    }
+                    getParameterData(buoy_id, parameter_id);
+                }
+            },
+            error: function (error) {
+                console.log(error);
+                showToasts(error.responseJSON.message, error.responseJSON.messageType);
+            }
+        });
+    }
+
+    function destroyExistingCharts() {
+        for (let i = 0; i < charts.length; i++) {
+            charts[i].dispose();
+        }
+        charts = [];
+    }
+
+    function reloadCharts() {
+        parameterDatas = []
+        for (let i = 0; i < parameters.length; i++) {
+            getParameterData(buoy_id, parameters[i].id);
+        }
+    }
+
+    $(document).ready(() => {
+        charts = [];
+        parameters = []
+        parameterDatas = []
+        buoy_id = document.getElementById('charts-container').getAttribute('data-buoyId');
+
+        // get parameters from url parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const parameterIds = urlParams.get('parameters').split(',');
+        parameterIds.forEach((parameter_id) => {
+            getParameter(parameter_id);
+        });
+
+        setSearchRange();
+    })
+</script>
+{% endblock script %}

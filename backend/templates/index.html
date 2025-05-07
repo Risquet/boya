@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}
+Iniciar Sesión
+{% endblock title %}
+
+{% block style %}
+{%endblock style %}
+
+{% block content %}
+<div class="pt-5">
+    <div class="toast-container top-0 end-0 p-3">
+        {% if messages %}
+        {% for message in messages %}
+        {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+        <div class="toast text-bg-success" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <b>{{ message }}</b>
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        {% else %}
+        <div class="toast text-bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <b>{{ message }}</b>
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+    </div>
+    <div id="grad">
+        <div class="container py-5">
+            <div class="d-flex justify-content-between">
+                <div class="d-flex flex-column">
+                    <div class="mb-4">
+                        <h1 class="medium-blue roboto-medium">Sistema de Información y Visualización de Datos Marinos en Tiempo Real</h1>
+                       <!--  <h2 class="medium-blue roboto-light">Agencia de Investigaciones Marinas</h2> -->
+                    </div>
+                    <p class="light-gray roboto-light"
+                        style="max-width: 500px; text-align: justify; text-justify: inter-word;">
+                        Bienvenido a nuestro sitio web. Aquí encontrarás información en tiempo real y datos
+                        históricos
+                        recogidos por las boyas metoceánicas de la Agencia de Investigaciones Marinas,
+                        perteneciente a
+                        GEOCUBA Estudios Marinos, ubicadas en aguas cubanas y el Mar Caribe.
+                    </p>
+                    <div class="d-flex justify-content-start mb-3">
+                        <a href="/login" class="btn btn-primary me-5">INICIAR SESIÓN</a>
+                        <a href="/register" class="btn btn-primary">REGISTRARSE</a>
+                    </div>
+                </div>
+                <img src="/static/images/boya.png" width="400px">
+            </div>
+        </div>
+    </div>
+    <div class="container py-5">
+        <h2 class="medium-blue roboto-regular text-center mb-3">¿QUIÉNES SOMOS?</h2>
+        <p class="light-gray roboto-light" style="
+        text-align: justify;
+        text-justify: inter-word;">
+            GEOCUBA Estudios Marinos (GEOEM) creada el 1 de mayo de 1995,
+            heredera de del Instituto Cubano de Hidrografía, es la entidad del Grupo Empresarial GEOCUBA
+            especializada en las investigaciones marinas para proyectos de ingeniería, la cartografía náutica, la
+            ayuda a la navegación y estudios ambientales del medio marino. GEOEM tiene como objeto empresarial:
+            investigar, proyectar, ejecutar y comercializar sus productos y servicios en las actividades de
+            hidrografía, la oceanografía, la ingeniería de costas, la geología, la geotecnia y geofísica marina; la
+            cartografía y las publicaciones náuticas; la geoinformática e infraestructura de datos espaciales
+            marinos; los servicios marítimos, la ayuda a la navegación, el buceo especializado y los estudios de
+            peligro, vulnerabilidad y riesgos vinculados al medio marino. Todo ello con calidad, tecnología de
+            avanzada, personal de experiencia y alta capacidad de integración de sus productos y servicios para
+            satisfacer las expectativas y necesidades de los clientes y la sociedad. El Sistema Integrado de Gestión
+            de GEOEM está certificado en base a las normas NC-ISO 9001:2015, NC-ISO 14001:2015 y la NC-ISO
+            18001:2015.
+        </p>
+    </div>
+    <div style="background-color: #EBF4FF;">
+        <div class="container py-5">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="d-flex flex-column">
+                        <div class="text-center">
+                            <img class="mb-3" src="/static/images/mision.png" width="250px">
+                        </div>
+                        <b class="medium-blue roboto-regular text-center">MISIÓN</b>
+                        <p class="light-gray roboto-light" style="
+                        text-align: justify;
+                        text-justify: inter-word;">
+                            Nuestra misión es proporcionar datos oceanográficos y meteorológicos precisos y actualizados para apoyar la
+                            investigación científica, la gestión de recursos marinos, y la seguridad marítima. Creemos
+                            en la
+                            importancia de compartir estos datos con el público para fomentar la comprensión y la
+                            apreciación de
+                            nuestro océano.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex flex-column">
+                        <div class="text-center">
+                            <img class="mb-3" src="/static/images/boya-meta.png" width="250px">
+                        </div>
+                        <b class="medium-blue roboto-regular text-center">BOYA METOCEÁNICA</b>
+                        <p class="light-gray roboto-light" style="
+                        text-align: justify;
+                        text-justify: inter-word;">
+                            Una boya metoceánica es un dispositivo flotante que se utiliza para recoger datos sobre las
+                            condiciones atmosféricas y oceánicas. Nuestras boyas están equipadas con una variedad de
+                            sensores
+                            que, entre otros, miden parámetros como la altura y dirección de las olas, la temperatura de
+                            la
+                            superficie del mar, los perfiles de salinidad y temperatura, la velocidad y dirección de la
+                            corriente superficial, y los parámetros meteorológicos.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex flex-column">
+                        <div class="text-center">
+                            <img class="mb-3" src="/static/images/importancia.png" width="250px">
+                        </div>
+                        <b class="medium-blue roboto-regular text-center">IMPORTANCIA</b>
+                        <p class="light-gray roboto-light" style="
+                        text-align: justify;
+                        text-justify: inter-word;">
+                            Los datos recogidos por nuestras boyas son vitales para una variedad de aplicaciones. Los
+                            científicos los utilizan para entender mejor los procesos oceánicos y atmosféricos y cómo
+                            estos
+                            afectan al clima global. Los gestores de recursos marinos los utilizan para tomar decisiones
+                            informadas sobre la gestión de los recursos oceánicos, los navegantes y marineros los
+                            utilizan
+                            para navegar de manera segura y eficiente.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

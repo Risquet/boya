@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}
+Inicio
+{% endblock title %}
+
+{% block content %}
+<div class="container py-4">
+    {% if messages %}
+    <div class="toast-container top-0 end-0 p-3">
+        {% for message in messages %}
+        {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+        <div class="toast text-bg-success" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <b>{{ message }}</b>
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        {% else %}
+        <div class="toast text-bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <b>{{ message }}</b>
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+            <li class="breadcrumb-item active">ECharts</li>
+        </ol>
+    </nav>
+    <br>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card p-4">
+                <div class="row mb-3">
+                    <div class="col-md-2">
+                    </div>
+                    <div class="col-md-10">
+                        <h5 class="pb-2">Parámetros</h5>
+                        {% if parameters %}
+                        {% for parameter in parameters %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="parameter-{{ parameter.id }}"
+                                onclick="handleClickParameter('{{ parameter.id }}')">
+                            <label class="form-check-label" for="flexCheckDefault">
+                                {{ parameter.name }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="row mb-2">
+                <div class="col">
+                    <div class="card p-4">
+                        <form id="filterForm">
+                            {% csrf_token %}
+                            <div class="row mb-2">
+                                <div class="col">
+                                    <h5>Graficar Parámetro</h5>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-2">
+                                    <label for="" class="form-label">Fecha y Hora Inicial</label>
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="date" class="form-control" id="startdate" name="startdate"
+                                        value="2023-01-01">
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="time" class="form-control" id="starttime" name="starttime"
+                                        value="00:00">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-2">
+                                    <label for="" class="form-label">Fecha y Hora Final</label>
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="date" class="form-control" id="enddate" name="enddate"
+                                        value="2023-01-31">
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="time" class="form-control" id="endtime" name="endtime" value="00:00">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <button class="btn btn-primary" type="submit">Enviar</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div id="charts-container">
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block script %}
+<script src="{% static 'js/echarts.min.js' %}"></script>
+<script>
+    var parameters;
+    var chart;
+    var ctx;
+
+    function plotWithEChart(data, parameter, container) {
+        chart = echarts.init(document.getElementById(container));
+        data = data.map((item) => {
+            return {
+                name: item.timestamp,
+                value: [
+                    item.timestamp,
+                    item.value
+                ]
+            }
+        });
+        option = {
+            toolbox: {
+                feature: {
+                    dataZoom: {
+                        yAxisIndex: 'none'
+                    },
+                    restore: {}
+                }
+            },
+            xAxis: {
+                type: 'time',
+                splitLine: {
+                    show: false
+                }
+            },
+            yAxis: {
+                min: parameter.min,
+                max: parameter.max,
+                boundaryGap: [0, '100%'],
+                splitLine: {
+                    show: false
+                }
+            },
+            series: [
+                {
+                    type: 'line',
+                    smooth: true,
+                    data: data,
+                }
+            ]
+        };
+
+        chart.setOption(option);
+    }
+
+    function getData(parameter) {
+        ctx = document.getElementById('myChart');
+        const startDate = document.getElementById('startdate').value;
+        const startTime = document.getElementById('starttime').value;
+        const endDate = document.getElementById('enddate').value;
+        const endTime = document.getElementById('endtime').value;
+
+        $.ajax({
+            url: `/api/data/1/${parameter.id}/?startdate=${startDate}&starttime=${startTime}&enddate=${endDate}&endtime=${endTime}`,
+            type: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                const container = document.querySelector('#charts-container');
+                const chartContainer = document.createElement('div');
+                chartContainer.classList.add('card', 'p-4', 'mb-2');
+                chartContainer.setAttribute('id', `container-${parameter.id}`);
+                chartContainer.setAttribute('style', 'min-width: 700px; width: 100%; height: 500px;');
+                const header = document.createElement('h5');
+                header.innerHTML = parameter.name;
+                chartContainer.appendChild(header);
+                const div = document.createElement('div');
+                div.setAttribute('id', `main-${parameter.id}`);
+                div.setAttribute('style', 'min-width: 700px; width: 100%; height: 500px;');
+                chartContainer.appendChild(div);
+                container.appendChild(chartContainer);
+                plotWithEChart(response.data.data, parameter, `main-${parameter.id}`);
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+
+    function handleClickParameter(id) {
+
+        // if checkbox unchecked, remove chart
+        if (!document.querySelector(`#parameter-${id}`).checked) {
+            const container = document.querySelector('#charts-container');
+            const div = document.querySelector(`#container-${id}`);
+            if (div) {
+                container.removeChild(div);
+            }
+        }
+        // remove existing chart with parameter id
+        else {
+            const container = document.querySelector('#charts-container');
+            const div = document.querySelector(`#container-${id}`);
+            if (div) {
+                container.removeChild(div);
+            }
+
+            const parameter = parameters.find((item) => item.id == id);
+            getData(parameter);
+        }
+    }
+
+    function getParameters() {
+        $.ajax({
+            url: `/api/parameters/`,
+            type: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                if (response.messageType == 'success') {
+                    parameters = response.data.results;
+                    if (parameters && parameters.length > 0) {
+                        getData(parameters[0]);
+                    }
+                }
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+
+    $(document).ready(() => {
+        filterForm = document.getElementById('filterForm');
+        filterForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+        });
+
+        getParameters();
+    })
+</script>
+{% endblock script %}

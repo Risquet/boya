@@ -1,0 +1,262 @@
+{% extends 'base-white.html' %}
+
+{% load static %}
+
+{% block title %}
+Boya
+{% endblock title %}
+
+{% block style %}
+<style>
+    div#divBackground {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        color: white;
+        background-color: #EAF2F9;
+        z-index: 9000;
+        opacity: 0.4;
+        filter: alpha(opacity=40);
+        -moz-opacity: 0.8;
+        overflow: hidden;
+        display: none;
+        background: repeating-linear-gradient(45deg, #BAD9F4, #BAD9F4 10px, #EAF2F9 10px, #EAF2F9 15px)
+    }
+
+    div#divWaitForPageLoad {
+        position: absolute;
+        display: none;
+        z-index: 9010;
+        top: 50%;
+        text-align: center;
+    }
+</style>
+{% endblock style %}
+
+{% block content %}
+<div class="container py-4">
+    <div id="toastContainer" class="toast-container top-0 end-0 p-3">
+        {% if messages %}
+        {% for message in messages %}
+        {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+        <div class="toast text-bg-success" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <b>{{ message }}</b>
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        {% else %}
+        <div class="toast text-bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <b>{{ message }}</b>
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+    </div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+            <li class="breadcrumb-item active">{{buoy.name}}</li>
+        </ol>
+    </nav>
+    <br>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card p-4">
+                <div class="row mb-3">
+                    <div class="col">
+                        <h5 class="medium-blue roboto-medium pb-2">{{ buoy.name }}</h5>
+                        <!-- Button trigger modal -->
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                            data-bs-target="#staticBackdrop">
+                            DETALLES
+                        </button>
+
+                        <!-- Modal -->
+                        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
+                            tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="staticBackdropLabel">{{ buoy.name }}</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p><b>Modelo:</b> {{ buoy.model }}</p>
+                                        <p><b>Fabricante:</b> {{ buoy.manufacturer }}</p>
+                                        <p><b>Profundidad de Instalación:</b> {{ buoy.depth }} m</p>
+                                        <p><b>Latitud:</b> {{ buoy.lat }}</p>
+                                        <p><b>Longitud:</b> {{ buoy.lon }}</p>
+
+                                        <div class="d-flex justify-content-start">
+                                            {% if buoy.img %}
+                                            <div class="d-flex flex-column me-3">
+                                                <img class="img-thumbnail" src="/{{ buoy.img }}"
+                                                    onclick="window.open('/{{ buoy.img }}', '_blank');" alt="imagen"
+                                                    width="128" height="128">
+                                                <p>Boya</p>
+                                            </div>
+                                            {% endif %}
+                                            {% if buoy.plans %}
+                                            <div class="d-flex flex-column">
+                                                <img class="img-thumbnail" src="/{{ buoy.plans }}"
+                                                    onclick="window.open('/{{ buoy.plans }}', '_blank');" alt="imagen"
+                                                    width="128" height="128">
+                                                <p>Planos de Instalación</p>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Cerrar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col">
+                        <h5 class="medium-blue roboto-regular pb-2">PARÁMETROS</h5>
+                        <div id="parameters-container">
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col">
+                        <button class="btn btn-primary" id="multi-charts-btn">
+                            GRÁFICOS AGRUPADOS
+                        </button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <button class="btn btn-primary" id="stacked-charts-btn">
+                            GRÁFICOS APILADOS
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9">
+            {% if user.is_authenticated %}
+            {% if user.is_superuser %}
+            <div class="card p-4 mb-2">
+                <form id="uploadForm" method="post" enctype="multipart/form-data">
+                    <div class="row mb-2">
+                        <div class="col">
+                            <h5 class="medium-blue roboto-medium">Insertar Datos de Boya Metoceánica</h5>
+                        </div>
+                    </div>
+                    <div class="row">
+                        {% csrf_token %}
+                        <div class="col-md-8 mb-3">
+                            <input type="file" class="form-control" name="file" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <button class="btn btn-primary" type="button"
+                                onclick="uploadData('{{buoy.id}}')">ENVIAR</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+            {% endif %}
+            <div id="charts-container">
+            </div>
+        </div>
+    </div>
+    <div id="divBackground"></div>
+    <div class="container" id="divWaitForPageLoad">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <span class="ms-1">Importanto datos...</span>
+        <span id="loading-progress" class="ms-1"></span>
+    </div>
+</div>
+{% endblock content %}
+
+{% block script %}
+<script src="{% static 'js/echarts.min.js' %}"></script>
+<script src="{% static 'js/custom.js' %}"></script>
+<script>
+    var buoy;
+    var parameters;
+    var charts;
+
+    function getUser() {
+        $.ajax({
+            url: `/api/user/`,
+            type: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                is_authenticated = true;
+            },
+            error: function (error) {
+                console.log(error.responseJSON.message);
+            },
+            complete: function () {
+                getBuoy(buoy_id);
+            }
+        });
+    }
+
+    $(document).ready(() => {
+        charts = []
+        parameters = []
+        // get buoy id from url, it is the last part of the url
+        url = window.location.href.split('/');
+        url.pop();
+        buoy_id = url.pop();
+
+        getUser();
+
+        var multiChartsBtn = document.getElementById('multi-charts-btn');
+        multiChartsBtn.addEventListener('click', () => {
+            var selectedParameters = [];
+            var parameterCheckboxes = document.getElementsByClassName('parameter-checkbox');
+            for (var i = 0; i < parameterCheckboxes.length; i++) {
+                if (parameterCheckboxes[i].checked) {
+                    selectedParameters.push(parameterCheckboxes[i].getAttribute('data-parameter-id'));
+                }
+            }
+            if (selectedParameters.length > 1) {
+                const url = `/buoys/multi-charts/{{buoy.id}}?parameters=${selectedParameters.join(',')}`
+                // open new window with selected parameters
+                window.open(url, '_blank');
+            } else {
+                alert('Debe seleccionar al menos dos parámetros');
+            }
+        });
+
+        var stackedChartsBtn = document.getElementById('stacked-charts-btn');
+        stackedChartsBtn.addEventListener('click', () => {
+            var selectedParameters = [];
+            var parameterCheckboxes = document.getElementsByClassName('parameter-checkbox');
+            for (var i = 0; i < parameterCheckboxes.length; i++) {
+                if (parameterCheckboxes[i].checked) {
+                    selectedParameters.push(parameterCheckboxes[i].getAttribute('data-parameter-id'));
+                }
+            }
+            if (selectedParameters.length > 1) {
+                const url = `/buoys/stacked-charts/{{buoy.id}}?parameters=${selectedParameters.join(',')}`
+                // open new window with selected parameters
+                window.open(url, '_blank');
+            } else {
+                alert('Debe seleccionar al menos dos parámetros');
+            }
+        });
+    })
+</script>
+{% endblock script %}

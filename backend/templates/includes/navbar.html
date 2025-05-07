@@ -1,0 +1,80 @@
+{% load static %}
+<nav class="navbar navbar-expand-md navbar-light shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <img src="{% static 'images/logoGeo.png' %}" alt="" height="57">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <!-- Left Side Of Navbar -->
+            <ul class="navbar-nav me-auto">
+
+            </ul>
+
+            <!-- Right Side Of Navbar -->
+            {% if user.is_authenticated %}
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link medium-blue" href="/">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link medium-blue" href="/map">Boyas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link medium-blue" href="/news">Novedades</a>
+                </li>
+                {% if user.is_superuser %}
+                <li class="nav-item">
+                    <a class="nav-link medium-blue" href="/admin/">Administración</a>
+                </li>
+                {% endif %}
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle medium-blue" href="#" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        {{ user.first_name }}
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <form id="logout-form" action="/logout/" method="POST">
+                                {% csrf_token %}
+                            </form>
+                            <a class="dropdown-item medium-blue" href="#"
+                                onclick="document.getElementById('logout-form').submit()">Salir</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            {% else %}
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link medium-blue" href="/">Inicio</a>
+                </li>
+               <!-- <li class="nav-item">
+                    <a class="nav-link medium-blue" href="/">Agencia</a>
+                </li>-->
+                <li class="nav-item">
+                    <a class="nav-link medium-blue" href="/map">Boyas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link medium-blue" href="/news">Novedades</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle medium-blue" href="#" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Usuario
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item medium-blue" href="/login/">Iniciar Sesión</a></li>
+                        <li><a class="dropdown-item medium-blue" href="/register/">Registro</a></li>
+                    </ul>
+                </li>
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+</nav>

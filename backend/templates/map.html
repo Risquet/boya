@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}
+Mapa
+{% endblock title %}
+
+{% block style %}
+<link href="{% static 'css/leaflet.css' %}" rel="stylesheet">
+{% endblock style %}
+
+{% block content %}
+<div class="container">
+    {% if messages %}
+    <div class="toast-container top-0 end-0 p-3">
+        {% for message in messages %}
+        {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+        <div class="toast text-bg-success" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <b>{{ message }}</b>
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        {% else %}
+        <div class="toast text-bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <b>{{ message }}</b>
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+<div class="container-fluid p-0">
+    <div id="map" style="width: 100%; height: 100vh;"></div>
+</div>
+{% endblock content %}
+
+{% block script %}
+<script src="{% static 'js/leaflet.js' %}"></script>
+<script src="{% static 'js/map.js' %}"></script>
+{% endblock script %}

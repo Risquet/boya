@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}
+Inicio
+{% endblock title %}
+
+{% block style %}
+<style>
+    .centered-element {
+        margin-top: 75px;
+    }
+</style>
+{%endblock style %}
+
+{% block content %}
+<div id="grad">
+    <div class="container p-5">
+        <div class="toast-container top-0 end-0 p-3">
+            {% if messages %}
+            {% for message in messages %}
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+            <div class="toast text-bg-success" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <b>{{ message }}</b>
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+            {% else %}
+            <div class="toast text-bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <b>{{ message }}</b>
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <form method="post">
+                    <h2 class="medium-blue roboto-medium mb-3">Registro</h2>
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="row mb-3">
+                        {% if field.name == 'password1' or field.name == 'password2' %}
+                        <div class="col-4">
+                            <label class="form-label medium-blue" for="{{ field.auto_id }}">{{ field.label }}</label>
+                        </div>
+                        <div class="col-8">
+                            <div class="input-group">
+                                {{ field }}
+                                <span class="input-group-text">
+                                    <img onclick="openEye('{{ field.auto_id }}')" id="closed-eye-{{ field.auto_id }}"
+                                        src="/static/images/eye-slash.svg" width="16" style="display: none;"
+                                        height="16">
+                                    <img onclick="closeEye('{{ field.auto_id }}')" id="open-eye-{{ field.auto_id }}"
+                                        src="/static/images/eye.svg" width="16" height="16">
+                                </span>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="col-4">
+                            <label class="form-label medium-blue" for="{{ field.auto_id }}">{{ field.label }}</label>
+                        </div>
+                        <div class="col-8">
+                            {{ field }}
+                        </div>
+                        {% endif %}
+
+                        {% if field.errors %}
+                        <div class="my-2">
+                            {% for err in field.errors %}
+                            <p class="text-danger">{{ err }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    <div class="mb-5 light-gray roboto-light">
+                        <p>Su contraseña no puede asemejarse tanto a su otra información personal,
+                            debe contener al menos 8 caracteres,
+                            no puede ser una clave utilizada comúnmente,
+                            y no puede ser completamente numérica.</p>
+                    </div>
+                    <div class="d-flex flex-column">
+                        <div class="mb-3">
+                            <a href="/" class="btn btn-primary me-4">Volver al Inicio</a>
+                            <button type="submit" class="btn btn-primary">Registrar</button>
+                        </div>
+                        <div>¿Ya tienes una cuenta? <a href="/login/">Inicia Sesión</a></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    function openEye(id) {
+        document.getElementById(`open-eye-${id}`).style.display = 'inline-block';
+        document.getElementById(`closed-eye-${id}`).style.display = 'none';
+        document.getElementById(id).type = 'password';
+    }
+    function closeEye(id) {
+        document.getElementById(`closed-eye-${id}`).style.display = 'inline-block';
+        document.getElementById(`open-eye-${id}`).style.display = 'none';
+        document.getElementById(id).type = 'text';
+    }
+</script>
+{% endblock scripts %}
+{% endblock content %}

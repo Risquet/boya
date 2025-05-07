@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}
+Inicio
+{% endblock title %}
+
+{% block style %}
+<link href="{% static 'css/uPlot.min.css' %}" rel="stylesheet"> 
+{% endblock style %}
+
+{% block content %}
+<div class="container">
+    {% if messages %}
+    <div class="toast-container top-0 end-0 p-3">
+        {% for message in messages %}
+        {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+        <div class="toast text-bg-success" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <b>{{ message }}</b>
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        {% else %}
+        <div class="toast text-bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <b>{{ message }}</b>
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+            <li class="breadcrumb-item active">uPlot</li>
+        </ol>
+    </nav>
+    <br>
+    <div class="row mb-2">
+        <div class="col">
+            <div class="card p-4">
+                <form id="filterForm">
+                    {% csrf_token %}
+                    <div class="row mb-2">
+                        <div class="col">
+                            <h5>Graficar Parámetro</h5>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-2">
+                            <label for="" class="form-label">Parámetro</label>
+                        </div>
+                        <div class="col-md-10">
+                            {% if parameters %}
+                            <select id="parameter" name="parameter" class="form-control">
+                                {% for parameter in parameters %}
+                                <option value="{{ parameter.id }}">{{ parameter.name }}</option>
+                                {% endfor %}
+                            </select>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-2">
+                            <label for="" class="form-label">Fecha y Hora Inicial</label>
+                        </div>
+                        <div class="col-md-5">
+                            <input type="date" class="form-control" id="startdate" name="startdate" value="2023-05-01">
+                        </div>
+                        <div class="col-md-5">
+                            <input type="time" class="form-control" id="starttime" name="starttime" value="00:00">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-2">
+                            <label for="" class="form-label">Fecha y Hora Final</label>
+                        </div>
+                        <div class="col-md-5">
+                            <input type="date" class="form-control" id="enddate" name="enddate" value="2023-05-31">
+                        </div>
+                        <div class="col-md-5">
+                            <input type="time" class="form-control" id="endtime" name="endtime" value="00:00">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <button class="btn btn-primary" type="submit">Enviar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <canvas id="myChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block script %}
+<script src="{% static 'js/uPlot.iife.min.js' %}"></script>
+<script>
+    var ctx;
+    function plotWithuPlot(data) {
+        const xAxis = data.map((item) => { return item.timestamp / 1000 });
+        const yAxis = data.map((item) => { return item.value });
+        data = [
+            xAxis,
+            yAxis
+        ]
+        let opts = {
+            title: "My Chart",
+            id: "chart1",
+            class: "my-chart",
+            width: 1024,
+            height: 768,
+            series: [
+                {},
+                {
+                    // initial toggled state (optional)
+                    show: true,
+
+                    spanGaps: false,
+
+                    // in-legend display
+                    label: "Valor",
+
+                    // series style
+                    stroke: "red",
+                    width: 1,
+                }
+            ],
+        };
+
+        let uplot = new uPlot(opts, data, document.body);
+    }
+
+    function getData() {
+        ctx = document.getElementById('myChart');
+        const parameter = document.getElementById('parameter').value;
+        const startDate = document.getElementById('startdate').value;
+        const startTime = document.getElementById('starttime').value;
+        const endDate = document.getElementById('enddate').value;
+        const endTime = document.getElementById('endtime').value;
+
+        $.ajax({
+            url: `/api/data/1/${parameter}/?startdate=${startDate}&starttime=${startTime}&enddate=${endDate}&endtime=${endTime}`,
+            type: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                // plotWithChartjs(response.data);
+                plotWithuPlot(response.data.data);
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+
+    $(document).ready(() => {
+        filterForm = document.getElementById('filterForm');
+        filterForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            getData();
+        });
+        getData();
+    })
+    
+</script>
+{% endblock script %}

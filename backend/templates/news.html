@@ -1,0 +1,26 @@
+{% extends 'base-white.html' %}
+
+{% load static %}
+
+{% block title %}
+Noticias
+{% endblock title %}
+
+{% block content %}
+<div class="py-5 container">
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <h1 class="medium-blue text-center">Novedades</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 mb-3">
+            {% for news in newslist %}
+            <h5 class="medium-blue roboto-medium">{{ news.title }}</h5>
+            <p class="roboto-light light-gray" style="text-align: justify; text-justify: inter-word;">{{ news.content }}</p>
+            <p class="roboto-light light-gray"><small class="text-muted">{{ news.date }}</small></p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock content %}

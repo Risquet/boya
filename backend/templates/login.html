@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}
+Iniciar Sesión
+{% endblock title %}
+
+{% block style %}
+<style>
+    .centered-element {
+        margin-top: 75px;
+    }
+
+    #grad {
+        height: 100%;
+        background-image: linear-gradient(rgba(255, 255, 255, 0), rgba(125, 185, 255, 0.9));
+    }
+</style>
+{%endblock style %}
+
+{% block content %}
+<div id="grad">
+    <div class="container p-5">
+        <div class="toast-container top-0 end-0 p-3">
+            {% if messages %}
+            {% for message in messages %}
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+            <div class="toast text-bg-success" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <b>{{ message }}</b>
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+            {% else %}
+            <div class="toast text-bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <b>{{ message }}</b>
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <form method="post">
+                    <h2 class="medium-blue roboto-medium mb-3">Iniciar Sesión</h2>
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="row mb-3">
+                        {% if field.name == 'password' %}
+                        <div class="col-4">
+                            <label class="medium-blue" for="{{ field.auto_id }}">{{ field.label }}</label>
+                        </div>
+                        <div class="col-8">
+                            <div class="input-group">
+                                {{ field }}
+                                <span class="input-group-text">
+                                    <img onclick="openEye('{{ field.auto_id }}')" id="closed-eye-{{ field.auto_id }}"
+                                        src="/static/images/eye-slash.svg" width="16" style="display: none;"
+                                        height="16">
+                                    <img onclick="closeEye('{{ field.auto_id }}')" id="open-eye-{{ field.auto_id }}"
+                                        src="/static/images/eye.svg" width="16" height="16">
+                                </span>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="col-4">
+                            <label class="medium-blue" for="{{ field.auto_id }}">{{ field.label }}</label>
+                        </div>
+                        <div class="col-8">
+                            {{ field }}
+                        </div>
+                        {% if field.errors %}
+                        <div class="my-2">
+                            {% for err in field.errors %}
+                            <p class="text-danger">{{ err }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    {% if form.non_field_errors %}
+                    <div class="my-2">
+                        {% for err in form.non_field_errors %}
+                        <p class="text-danger">{{ err }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <div class="d-flex flex-column mt-5">
+                        <div class="mb-3">
+                            <a href="/" class="btn btn-primary me-4">Volver al Inicio</a>
+                            <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+                        </div>
+                        <div class="mb-3">¿No tienes una cuenta? <a href="/register/">Regístrate</a></div>
+                        <div class="mb-3">¿Olvidaste tu contraseña? <a href="/forgot-password/">Restablecer contraseña</a></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    function openEye(id) {
+        document.getElementById(`open-eye-${id}`).style.display = 'inline-block';
+        document.getElementById(`closed-eye-${id}`).style.display = 'none';
+        document.getElementById(id).type = 'password';
+    }
+    function closeEye(id) {
+        document.getElementById(`closed-eye-${id}`).style.display = 'inline-block';
+        document.getElementById(`open-eye-${id}`).style.display = 'none';
+        document.getElementById(id).type = 'text';
+    }
+</script>
+{% endblock scripts %}
+{% endblock content %}
